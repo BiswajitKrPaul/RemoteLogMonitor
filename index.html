@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>STOMP WebSocket Tester</title>
+
+    <!-- SockJS + STOMP -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7/bundles/stomp.umd.min.js"></script>
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #0f172a;
+        color: #e5e7eb;
+        padding: 20px;
+      }
+      input,
+      textarea,
+      button {
+        width: 100%;
+        margin: 6px 0;
+        padding: 8px;
+        border-radius: 6px;
+        border: none;
+      }
+      button {
+        background: #2563eb;
+        color: white;
+        cursor: pointer;
+      }
+      button:disabled {
+        background: #475569;
+      }
+      textarea {
+        height: 140px;
+        background: #020617;
+        color: #22c55e;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h2>🧪 STOMP WebSocket Tester</h2>
+
+    <label>WebSocket URL</label>
+    <input id="url" value="http://localhost:8080/ws" />
+
+    <div class="row">
+      <div>
+        <label>Subscribe Destination</label>
+        <input id="subscribe" value="/topic/message" />
+        <button onclick="subscribe()">Subscribe</button>
+      </div>
+
+      <div>
+        <label>Send Destination (/app)</label>
+        <input id="sendTo" value="/app/sendMessage" />
+        <button onclick="send()">Send Message</button>
+      </div>
+    </div>
+
+    <label>Message Body (JSON or text)</label>
+    <input id="message" value='{"sender":"sdsad","content":"asdasd","receiver":"asdasd"}' />
+
+    <div class="row">
+      <button onclick="connect()">Connect</button>
+      <button onclick="disconnect()">Disconnect</button>
+    </div>
+
+    <label>Logs</label>
+    <textarea id="log" readonly></textarea>
+
+    <script>
+      let client;
+
+      function log(msg) {
+        const box = document.getElementById('log');
+        box.value += msg + '\n';
+        box.scrollTop = box.scrollHeight;
+      }
+
+      function connect() {
+        const url = document.getElementById('url').value;
+
+        client = new StompJs.Client({
+          webSocketFactory: () => new SockJS(url + '?t=' + Date.now()),
+          debug: (str) => log(str),
+          onConnect: () => {
+            log('✅ CONNECTED');
+          },
+          onStompError: (frame) => {
+            log('❌ STOMP ERROR: ' + frame.body);
+          }
+        });
+
+        client.activate();
+      }
+
+      function subscribe() {
+        const dest = document.getElementById('subscribe').value;
+
+        if (!client || !client.connected) {
+          alert('Connect first');
+          return;
+        }
+
+        client.subscribe(dest, (msg) => {
+          log('📩 ' + dest + ' → ' + msg.body);
+        });
+
+        log('🔔 Subscribed to ' + dest);
+      }
+
+      function send() {
+        if (!client || !client.connected) {
+          alert('Connect first');
+          return;
+        }
+
+        const dest = document.getElementById('sendTo').value;
+        const body = document.getElementById('message').value;
+
+        client.publish({
+          destination: dest,
+          body: body
+        });
+
+        log('🚀 Sent to ' + dest + ': ' + body);
+      }
+
+      function disconnect() {
+        if (client) {
+          client.deactivate();
+          log('🔌 Disconnected');
+        }
+      }
+    </script>
+  </body>
+</html>

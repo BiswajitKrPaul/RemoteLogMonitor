@@ -14,11 +14,12 @@ import java.util.UUID;
 @Table
 public class Application {
 
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name="owner_id")
+    @JoinColumn(name = "owner_id")
     private User owner;
 
     private String name;
@@ -26,7 +27,6 @@ public class Application {
     @Enumerated(EnumType.STRING)
     private PlatformType platform;
 
-    private boolean remoteLoggingEnabled = true;
     private int logRetentionDays = 7; // default retention
     private LocalDateTime createdAt = LocalDateTime.now();
 }

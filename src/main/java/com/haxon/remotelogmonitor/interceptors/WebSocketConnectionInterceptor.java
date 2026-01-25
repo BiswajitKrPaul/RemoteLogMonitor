@@ -7,6 +7,7 @@ import com.haxon.remotelogmonitor.repositories.APIKeyRepository;
 import com.haxon.remotelogmonitor.repositories.AppUserRepository;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.http.HttpStatus;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
@@ -16,6 +17,7 @@ import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -45,29 +47,29 @@ public class WebSocketConnectionInterceptor implements ChannelInterceptor {
             String userID = accessor.getFirstNativeHeader("X-USER-ID");
 
             if (token == null || token.isEmpty()) {
-                throw new IllegalArgumentException("X-API-KEY header is missing");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "X-API-KEY header is missing");
             }
 
             final Optional<AppUser> user = appUserRepository.findAppUsersByExternalId(userID);
             if (user.isEmpty()) {
-                throw new IllegalArgumentException("User not found");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User not found");
             }
 
             final AppUser appUser = user.get();
             final APIKeys apiKeyForThatUser = apiKeyRepository.findAPIKeysByAppUser(appUser);
 
             if (apiKeyForThatUser == null || apiKeyForThatUser.isRevoked()) {
-                throw new IllegalArgumentException("Not a Valid API Key");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not a Valid API Key");
             }
 
             String hashApiToken = apiKeyHasher.hash(token);
 
             if (!hashApiToken.equals(apiKeyForThatUser.getHashedAPIKey())) {
-                throw new IllegalArgumentException("Not a Valid API Key");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not a Valid API Key");
             }
 
-            Authentication authentication = new UsernamePasswordAuthenticationToken(user.get()
-                    .getExternalId(), null, Collections.emptyList());
+            Authentication authentication = new UsernamePasswordAuthenticationToken(user.get().getExternalId(), null,
+                    Collections.emptyList());
 
             accessor.setUser(authentication);
         }

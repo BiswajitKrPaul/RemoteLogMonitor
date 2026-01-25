@@ -16,12 +16,7 @@ public class ApiKeyHasher {
     public ApiKeyHasher(@Value("${api.key.secret}") String secret) {
         try {
             mac = Mac.getInstance("HmacSHA256");
-            mac.init(
-                    new SecretKeySpec(
-                            secret.getBytes(StandardCharsets.UTF_8),
-                            "HmacSHA256"
-                    )
-            );
+            mac.init(new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }

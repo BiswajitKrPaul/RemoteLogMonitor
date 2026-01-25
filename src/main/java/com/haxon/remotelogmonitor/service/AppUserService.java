@@ -23,19 +23,14 @@ public class AppUserService {
     public Optional<AppUser> loginOrCreate(LoginAppUserRequestDto loginAppUserRequestDto) {
         log.info("LoginOrCreate AppUserService Method Entered");
         log.debug("Request details: {}", loginAppUserRequestDto);
-        final AppUser appUser = appUserRepository.findAppUsersByExternalId(loginAppUserRequestDto.id())
-                .orElse(null);
+        final AppUser appUser = appUserRepository.findAppUsersByExternalId(loginAppUserRequestDto.id()).orElse(null);
         if (appUser == null) {
             // Creating App User
             log.debug("AppUser: {} not found", loginAppUserRequestDto.id());
             log.info("Creating AppUser");
-            final AppUser newAppUser = appUserRepository.save(AppUser.builder()
-                    .externalId(loginAppUserRequestDto.id())
-                    .platform(PlatformType.valueOf(loginAppUserRequestDto.platform()
-                            .toUpperCase()))
-                    .createdAt(LocalDateTime.now())
-                    .fullName(loginAppUserRequestDto.fullName())
-                    .build());
+            final AppUser newAppUser = appUserRepository.save(AppUser.builder().externalId(loginAppUserRequestDto.id())
+                    .platform(PlatformType.valueOf(loginAppUserRequestDto.platform().toUpperCase()))
+                    .createdAt(LocalDateTime.now()).fullName(loginAppUserRequestDto.fullName()).build());
             log.debug("Created New AppUser: {}", newAppUser);
             log.info("AppUser Registered Successfully");
             log.info("LoginOrCreate AppUserService Method Exited");

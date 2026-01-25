@@ -35,18 +35,12 @@ public class LogEntryService {
         if (appUser.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
-        final LogEntry createdLog = logEntryRepository.save(LogEntry.builder()
-                .logLevel(LogLevel.valueOf(logEntryRequestDto.loglevel()
-                        .toUpperCase()))
-                .message(logEntryRequestDto.message())
-                .stacktrace(logEntryRequestDto.stacktrace())
-                .platform(PlatformType.valueOf(logEntryRequestDto.platform()
-                        .toUpperCase()))
-                .createdAt(LocalDateTime.now())
-                .appUser(appUser.get())
-                .build());
-        simpMessagingTemplate.convertAndSend("/topic/user.logs/" + appUser.get()
-                .getExternalId(), createdLog);
+        final LogEntry createdLog = logEntryRepository.save(
+                LogEntry.builder().logLevel(LogLevel.valueOf(logEntryRequestDto.loglevel().toUpperCase()))
+                        .message(logEntryRequestDto.message()).stacktrace(logEntryRequestDto.stacktrace())
+                        .platform(PlatformType.valueOf(logEntryRequestDto.platform().toUpperCase()))
+                        .createdAt(LocalDateTime.now()).appUser(appUser.get()).build());
+        simpMessagingTemplate.convertAndSend("/topic/user.logs/" + appUser.get().getExternalId(), createdLog);
         return createdLog;
     }
 }

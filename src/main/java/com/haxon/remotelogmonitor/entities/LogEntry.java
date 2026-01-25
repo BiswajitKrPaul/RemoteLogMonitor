@@ -20,9 +20,11 @@ public class LogEntry {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-//    @ManyToOne
-//    @JoinColumn(name = "application_id")
-//    private Application application;
+/*
+    @ManyToOne
+    @JoinColumn(name = "application_id")
+    private Application application;
+*/
 
     @ManyToOne
     @JoinColumn(name = "app_user_id")
